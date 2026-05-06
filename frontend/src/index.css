@@ -1,0 +1,15 @@
+/* Tailwind v4 — just one import line, that's it */
+@import "tailwindcss";
+
+/* Enable class-based dark mode in v4 */
+@variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background-color: #111827;
+  color: #f9fafb;
+  min-height: 100vh;
+}
