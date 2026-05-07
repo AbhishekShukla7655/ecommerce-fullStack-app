@@ -31,7 +31,7 @@ public class Order {
     private Double totalAmount;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(20)")
     private OrderStatus status = OrderStatus.PENDING;
 
 

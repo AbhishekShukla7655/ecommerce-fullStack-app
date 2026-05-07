@@ -30,13 +30,14 @@ public class User {
     @Column
     private String password;
 
+    // AB — sirf columnDefinition add kiya, baki sab same
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(20)")
     private Role role = Role.USER;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Provider provider  = Provider.LOCAL;
+    @Column(nullable = false, columnDefinition = "VARCHAR(20)")
+    private Provider provider = Provider.LOCAL;
 
     @CreationTimestamp
     @Column(updatable = false)

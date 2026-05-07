@@ -1,5 +1,3 @@
-// This page handles the redirect after Google login
-// Reads token from URL and saves to Redux + localStorage
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
@@ -10,8 +8,6 @@ function OAuth2CallbackPage() {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    // Read token and user info from URL query params
-    // URL looks like: /oauth2/callback?token=eyJ...&name=John&email=...&role=USER
     const params = new URLSearchParams(window.location.search)
     const token = params.get('token')
     const name  = params.get('name')
@@ -19,12 +15,9 @@ function OAuth2CallbackPage() {
     const role  = params.get('role')
 
     if (token) {
-      // Save to Redux + localStorage
       dispatch(setCredentials({ token, name, email, role }))
-      // Redirect to home page
       navigate('/')
     } else {
-      // Something went wrong — go to login
       navigate('/login')
     }
   }, [])
