@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import api from "../../services/api";
-import { getImageUrl } from "../services/imageHelper";
+import { getImageUrl } from "../../services/imageHelper";
 
 // Status badge colors
 const statusColors = {

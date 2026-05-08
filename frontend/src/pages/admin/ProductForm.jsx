@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../services/api";
-import { getImageUrl } from "../services/imageHelper";
+import { getImageUrl } from "../../services/imageHelper";
 function ProductForm() {
   const navigate = useNavigate();
   const { id } = useParams(); // edit mode mein id hoga, add mode mein undefined

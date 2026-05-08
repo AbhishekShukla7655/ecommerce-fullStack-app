@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../services/api";
-import { getImageUrl } from "../services/imageHelper";
+import { getImageUrl } from "../../services/imageHelper";
+
 function ManageProducts() {
   const navigate = useNavigate();
 
@@ -156,7 +157,10 @@ function ManageProducts() {
             {/* Table rows */}
             <div className="divide-y divide-gray-700">
               {products.map((product) => {
-                import { getImageUrl } from "../services/imageHelper";
+                const backendUrl =
+                  import.meta.env.VITE_API_URL?.replace("/api", "") ||
+                  "http://localhost:8080";
+                window.location.href = `${backendUrl}/oauth2/authorization/google`;
 
                 return (
                   <div
