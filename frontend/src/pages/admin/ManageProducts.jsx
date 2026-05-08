@@ -9,9 +9,8 @@ function ManageProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [deleting, setDeleting] = useState(null); // konsa product delete ho raha hai
+  const [deleting, setDeleting] = useState(null);
 
-  // Page load hote hi products fetch karo
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -29,22 +28,13 @@ function ManageProducts() {
     }
   };
 
-  // -----------------------------------------------
-  // Delete product
-  // -----------------------------------------------
   const handleDelete = async (productId, productName) => {
-    // Confirm karo pehle
     if (!window.confirm(`Delete "${productName}"? This cannot be undone.`)) {
       return;
     }
-
     setDeleting(productId);
-
     try {
-      // DELETE /api/products/{id} — ADMIN JWT required
       await api.delete(`/products/${productId}`);
-
-      // UI se bhi remove karo — page reload ki zaroorat nahi
       setProducts((prev) => prev.filter((p) => p.id !== productId));
     } catch (err) {
       console.error("Delete failed:", err);
@@ -54,9 +44,6 @@ function ManageProducts() {
     }
   };
 
-  // -----------------------------------------------
-  // LOADING
-  // -----------------------------------------------
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -71,9 +58,6 @@ function ManageProducts() {
     );
   }
 
-  // -----------------------------------------------
-  // MAIN PAGE
-  // -----------------------------------------------
   return (
     <div className="min-h-screen bg-gray-900 py-8 px-4">
       <div className="max-w-7xl mx-auto">
@@ -87,8 +71,6 @@ function ManageProducts() {
               {products.length} product{products.length !== 1 ? "s" : ""} total
             </p>
           </div>
-
-          {/* Add new product button */}
           <Link
             to="/admin/products/new"
             className="bg-purple-600 hover:bg-purple-700 text-white font-semibold
@@ -101,8 +83,7 @@ function ManageProducts() {
         {/* Back to dashboard */}
         <Link
           to="/admin"
-          className="text-gray-400 hover:text-white text-sm transition mb-6
-                     inline-block"
+          className="text-gray-400 hover:text-white text-sm transition mb-6 inline-block"
         >
           ← Back to Dashboard
         </Link>
@@ -137,13 +118,13 @@ function ManageProducts() {
           </div>
         )}
 
-        {/* ---- PRODUCTS TABLE ---- */}
+        {/* Products Table */}
         {products.length > 0 && (
           <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
             {/* Table header */}
             <div
-              className="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-750
-                            border-b border-gray-700 text-xs font-medium
+              className="grid grid-cols-12 gap-4 px-6 py-3 border-b
+                            border-gray-700 text-xs font-medium
                             text-gray-400 uppercase tracking-wide"
             >
               <div className="col-span-1">Image</div>
@@ -157,10 +138,8 @@ function ManageProducts() {
             {/* Table rows */}
             <div className="divide-y divide-gray-700">
               {products.map((product) => {
-                const backendUrl =
-                  import.meta.env.VITE_API_URL?.replace("/api", "") ||
-                  "http://localhost:8080";
-                window.location.href = `${backendUrl}/oauth2/authorization/google`;
+                // ✅ getImageUrl use karo — localhost hardcode nahi
+                const imageUrl = getImageUrl(product.imageUrl);
 
                 return (
                   <div
@@ -240,17 +219,14 @@ function ManageProducts() {
 
                     {/* Action buttons */}
                     <div className="col-span-3 flex items-center justify-end gap-2">
-                      {/* View button */}
                       <Link
                         to={`/products/${product.id}`}
                         className="bg-gray-700 hover:bg-gray-600 text-gray-300
                                    text-xs px-3 py-1.5 rounded-lg transition"
-                        target="_blank" // new tab mein khulega
+                        target="_blank"
                       >
                         View
                       </Link>
-
-                      {/* Edit button */}
                       <Link
                         to={`/admin/products/edit/${product.id}`}
                         className="bg-blue-900 hover:bg-blue-800 text-blue-300
@@ -258,8 +234,6 @@ function ManageProducts() {
                       >
                         Edit
                       </Link>
-
-                      {/* Delete button */}
                       <button
                         onClick={() => handleDelete(product.id, product.name)}
                         disabled={deleting === product.id}
