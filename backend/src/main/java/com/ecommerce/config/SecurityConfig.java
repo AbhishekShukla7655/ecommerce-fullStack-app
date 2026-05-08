@@ -44,7 +44,8 @@ public class SecurityConfig {
 
         @Bean
         public AuthenticationProvider authenticationProvider() {
-                DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+                // Spring Security 6.5 mein naya way
+                var provider = new DaoAuthenticationProvider();
                 provider.setUserDetailsService(userDetailsService);
                 provider.setPasswordEncoder(passwordEncoder());
                 return provider;
