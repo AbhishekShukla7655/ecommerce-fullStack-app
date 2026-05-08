@@ -13,12 +13,13 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/cart")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
+@CrossOrigin(origins = { "http://localhost:3000",
+        "http://localhost:5173",
+        "https://ecommerce-full-stack-app.vercel.app" })
 public class CartController {
 
     @Autowired
     private CartService cartService;
-
 
     @GetMapping
     public ResponseEntity<List<CartItem>> getCart(

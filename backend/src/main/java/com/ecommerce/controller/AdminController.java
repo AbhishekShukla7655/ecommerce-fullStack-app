@@ -17,7 +17,9 @@ import java.util.Map;
 // SecurityConfig enforces this via .hasRole("ADMIN") on /api/admin/**
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
+@CrossOrigin(origins = { "http://localhost:3000",
+        "http://localhost:5173",
+        "https://ecommerce-full-stack-app.vercel.app" })
 public class AdminController {
 
     @Autowired

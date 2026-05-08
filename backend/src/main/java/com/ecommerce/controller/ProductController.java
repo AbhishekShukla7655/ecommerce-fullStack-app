@@ -10,10 +10,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 
-
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
+@CrossOrigin(origins = { "http://localhost:3000",
+        "http://localhost:5173",
+        "https://ecommerce-full-stack-app.vercel.app" })
 public class ProductController {
 
     @Autowired
@@ -22,8 +23,7 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<List<ProductDTO>> getAllProducts(
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) String category
-    ) {
+            @RequestParam(required = false) String category) {
         List<ProductDTO> products = productService.getAllProducts(name, category);
         return ResponseEntity.ok(products);
     }

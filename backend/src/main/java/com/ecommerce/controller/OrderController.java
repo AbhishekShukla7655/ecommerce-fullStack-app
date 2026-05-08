@@ -14,7 +14,9 @@ import java.util.List;
 // Admin endpoints are in AdminController (Step 15)
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
+@CrossOrigin(origins = { "http://localhost:3000",
+        "http://localhost:5173",
+        "https://ecommerce-full-stack-app.vercel.app" })
 public class OrderController {
 
     @Autowired

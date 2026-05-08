@@ -28,114 +28,109 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private OAuth2SuccessHandler oAuth2SuccessHandler;
+        @Autowired
+        private OAuth2SuccessHandler oAuth2SuccessHandler;
 
-    @Autowired
-    private JwtFilter jwtFilter;
+        @Autowired
+        private JwtFilter jwtFilter;
 
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
+        @Autowired
+        private CustomUserDetailsService userDetailsService;
 
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        @Bean
+        public AuthenticationProvider authenticationProvider() {
+                DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+                provider.setUserDetailsService(userDetailsService);
+                provider.setPasswordEncoder(passwordEncoder());
+                return provider;
+        }
 
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
-        return provider;
-    }
+        @Bean
+        public AuthenticationManager authenticationManager(
+                        AuthenticationConfiguration config) throws Exception {
+                return config.getAuthenticationManager();
+        }
 
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration config = new CorsConfiguration();
 
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
+                config.setAllowedOrigins(List.of(
+                                "http://localhost:3000",
+                                "http://localhost:5173", // Vite default port
+                                "https://ecommerce-full-stack-app.vercel.app"));
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
+                config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
-        config.setAllowedOrigins(List.of(
-                "http://localhost:3000",
-                "http://localhost:5173"  // Vite default port
-        ));
+                config.setAllowedHeaders(List.of("*"));
 
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                config.setAllowCredentials(true);
 
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", config); // apply to all endpoints
+                return source;
+        }
 
-        config.setAllowedHeaders(List.of("*"));
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
+                http
+                                .csrf(csrf -> csrf.disable())
 
-        config.setAllowCredentials(true);
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config); // apply to all endpoints
-        return source;
-    }
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                                .authorizeHttpRequests(auth -> auth
 
-        http
-                .csrf(csrf -> csrf.disable())
+                                                .requestMatchers(HttpMethod.GET,
+                                                                "/api/products",
+                                                                "/api/products/**",
+                                                                "/images/**")
+                                                .permitAll()
 
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                                                .requestMatchers(
+                                                                "/api/auth/**",
+                                                                "/oauth2/**",
+                                                                "/login/oauth2/**")
+                                                .permitAll()
 
+                                                .requestMatchers(
+                                                                "/api/admin/**")
+                                                .hasRole("ADMIN")
 
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                                .requestMatchers(HttpMethod.POST,
+                                                                "/api/products")
+                                                .hasRole("ADMIN")
 
-                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers(HttpMethod.PUT,
+                                                                "/api/products/**")
+                                                .hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/products",
-                                "/api/products/**",
-                                "/images/**"
-                        ).permitAll()
+                                                .requestMatchers(HttpMethod.DELETE,
+                                                                "/api/products/**")
+                                                .hasRole("ADMIN")
 
-                        .requestMatchers(
-                                "/api/auth/**",
-                                "/oauth2/**",
-                                "/login/oauth2/**"
-                        ).permitAll()
+                                                .requestMatchers(
+                                                                "/api/cart/**",
+                                                                "/api/orders/**")
+                                                .authenticated()
 
-                        .requestMatchers(
-                                "/api/admin/**"
-                        ).hasRole("ADMIN")
+                                                .anyRequest().authenticated())
+                                .oauth2Login(oauth2 -> oauth2
+                                                .successHandler(oAuth2SuccessHandler) // our handler issues JWT after
+                                                                                      // Google login
+                                )
+                                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
 
-                        .requestMatchers(HttpMethod.POST,
-                                "/api/products"
-                        ).hasRole("ADMIN")
+                                .authenticationProvider(authenticationProvider());
 
-                        .requestMatchers(HttpMethod.PUT,
-                                "/api/products/**"
-                        ).hasRole("ADMIN")
-
-                        .requestMatchers(HttpMethod.DELETE,
-                                "/api/products/**"
-                        ).hasRole("ADMIN")
-
-                        .requestMatchers(
-                                "/api/cart/**",
-                                "/api/orders/**"
-                        ).authenticated()
-
-                        .anyRequest().authenticated()
-                )
-                .oauth2Login(oauth2 -> oauth2
-                        .successHandler(oAuth2SuccessHandler) // our handler issues JWT after Google login
-                )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-
-                .authenticationProvider(authenticationProvider());
-
-        return http.build();
-    }
+                return http.build();
+        }
 }
