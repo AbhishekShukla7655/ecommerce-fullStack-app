@@ -1,184 +1,180 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import api from '../../services/api'
-
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import api from "../../services/api";
+import { getImageUrl } from "../services/imageHelper";
 function ProductForm() {
-  const navigate    = useNavigate()
-  const { id }      = useParams() // edit mode mein id hoga, add mode mein undefined
+  const navigate = useNavigate();
+  const { id } = useParams(); // edit mode mein id hoga, add mode mein undefined
 
   // Agar id hai toh edit mode, warna add mode
-  const isEditMode  = Boolean(id)
+  const isEditMode = Boolean(id);
 
   // Form fields state
-  const [name,        setName]        = useState('')
-  const [description, setDescription] = useState('')
-  const [price,       setPrice]       = useState('')
-  const [category,    setCategory]    = useState('')
-  const [stock,       setStock]       = useState('')
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [category, setCategory] = useState("");
+  const [stock, setStock] = useState("");
 
   // Image state
-  const [imageFile,    setImageFile]    = useState(null)   // selected file object
-  const [imagePreview, setImagePreview] = useState(null)   // preview URL (blob)
-  const [existingImage, setExistingImage] = useState(null) // current image in DB
+  const [imageFile, setImageFile] = useState(null); // selected file object
+  const [imagePreview, setImagePreview] = useState(null); // preview URL (blob)
+  const [existingImage, setExistingImage] = useState(null); // current image in DB
 
   // UI state
-  const [loading,  setLoading]  = useState(false)
-  const [fetching, setFetching] = useState(false) // edit mode mein product fetch
-  const [error,    setError]    = useState('')
-  const [success,  setSuccess]  = useState('')
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false); // edit mode mein product fetch
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   // -----------------------------------------------
   // Edit mode: existing product data fetch karo
   // -----------------------------------------------
   useEffect(() => {
     if (isEditMode) {
-      fetchProduct()
+      fetchProduct();
     }
-  }, [id])
+  }, [id]);
 
   const fetchProduct = async () => {
     try {
-      setFetching(true)
-      const res = await api.get(`/products/${id}`)
-      const product = res.data
+      setFetching(true);
+      const res = await api.get(`/products/${id}`);
+      const product = res.data;
 
       // Form fields fill karo existing data se
-      setName(product.name || '')
-      setDescription(product.description || '')
-      setPrice(product.price || '')
-      setCategory(product.category || '')
-      setStock(product.stock || '')
+      setName(product.name || "");
+      setDescription(product.description || "");
+      setPrice(product.price || "");
+      setCategory(product.category || "");
+      setStock(product.stock || "");
 
       // Existing image store karo
       // Agar admin new image nahi choose karta toh yeh same rahega
       if (product.imageUrl) {
-        setExistingImage(product.imageUrl)
-        setImagePreview(
-          `http://localhost:8080/images/${product.imageUrl}`
-        )
+        setExistingImage(product.imageUrl);
+        setImagePreview(getImageUrl(product.imageUrl));
       }
-
     } catch (err) {
-      setError('Failed to load product data.')
-      console.error(err)
+      setError("Failed to load product data.");
+      console.error(err);
     } finally {
-      setFetching(false)
+      setFetching(false);
     }
-  }
+  };
 
   // -----------------------------------------------
   // Image file select hone pe preview banao
   // -----------------------------------------------
   const handleImageChange = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
 
-    if (!file) return
+    if (!file) return;
 
     // File size check — 5MB se zyada nahi
     if (file.size > 5 * 1024 * 1024) {
-      setError('Image size must be less than 5MB')
-      return
+      setError("Image size must be less than 5MB");
+      return;
     }
 
     // File type check
-    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    const allowed = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     if (!allowed.includes(file.type)) {
-      setError('Only JPG, PNG, WEBP images allowed')
-      return
+      setError("Only JPG, PNG, WEBP images allowed");
+      return;
     }
 
-    setError('')
-    setImageFile(file)
+    setError("");
+    setImageFile(file);
 
     // Preview banao — URL.createObjectURL() browser mein local URL banata hai
     // Yeh URL sirf is browser session mein kaam karta hai
-    const previewUrl = URL.createObjectURL(file)
-    setImagePreview(previewUrl)
-  }
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+  };
 
   // -----------------------------------------------
   // Form submit — Add ya Edit
   // -----------------------------------------------
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    setSuccess('')
+    e.preventDefault();
+    setError("");
+    setSuccess("");
 
     // Basic validation
     if (!name || !price || !category || !stock) {
-      setError('Please fill in all required fields')
-      return
+      setError("Please fill in all required fields");
+      return;
     }
 
     if (parseFloat(price) <= 0) {
-      setError('Price must be greater than 0')
-      return
+      setError("Price must be greater than 0");
+      return;
     }
 
     if (parseInt(stock) < 0) {
-      setError('Stock cannot be negative')
-      return
+      setError("Stock cannot be negative");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
       // -----------------------------------------------
       // IMPORTANT: Image upload ke liye FormData use karna zaroori hai
       // JSON se file send nahi ho sakti — sirf FormData se hoti hai
       // -----------------------------------------------
-      const formData = new FormData()
-      formData.append('name', name)
-      formData.append('description', description)
-      formData.append('price', parseFloat(price))
-      formData.append('category', category)
-      formData.append('stock', parseInt(stock))
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("description", description);
+      formData.append("price", parseFloat(price));
+      formData.append("category", category);
+      formData.append("stock", parseInt(stock));
 
       // Sirf nai image hai toh append karo
       // Edit mode mein agar koi nai image nahi choose ki toh image field nahi bhejte
       // Backend apne aap purani image rakhega
       if (imageFile) {
-        formData.append('image', imageFile)
+        formData.append("image", imageFile);
       }
 
       if (isEditMode) {
         // PUT /api/products/{id} — product update karo
         await api.put(`/products/${id}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        })
-        setSuccess('Product updated successfully!')
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        setSuccess("Product updated successfully!");
       } else {
         // POST /api/products — naya product add karo
-        await api.post('/products', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        })
-        setSuccess('Product added successfully!')
+        await api.post("/products", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        setSuccess("Product added successfully!");
 
         // Add mode mein form reset karo
-        setName('')
-        setDescription('')
-        setPrice('')
-        setCategory('')
-        setStock('')
-        setImageFile(null)
-        setImagePreview(null)
+        setName("");
+        setDescription("");
+        setPrice("");
+        setCategory("");
+        setStock("");
+        setImageFile(null);
+        setImagePreview(null);
       }
 
       // 1.5 second baad products list pe wapas jao
       setTimeout(() => {
-        navigate('/admin/products')
-      }, 1500)
-
+        navigate("/admin/products");
+      }, 1500);
     } catch (err) {
-      console.error('Submit failed:', err)
+      console.error("Submit failed:", err);
       setError(
         err.response?.data?.message ||
-        'Failed to save product. Please try again.'
-      )
+          "Failed to save product. Please try again.",
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // -----------------------------------------------
   // FETCHING STATE (edit mode mein data load ho raha hai)
@@ -187,12 +183,14 @@ function ProductForm() {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent
-                          rounded-full animate-spin mx-auto mb-4"></div>
+          <div
+            className="w-12 h-12 border-4 border-purple-600 border-t-transparent
+                          rounded-full animate-spin mx-auto mb-4"
+          ></div>
           <p className="text-gray-400">Loading product...</p>
         </div>
       </div>
-    )
+    );
   }
 
   // -----------------------------------------------
@@ -201,54 +199,57 @@ function ProductForm() {
   return (
     <div className="min-h-screen bg-gray-900 py-8 px-4">
       <div className="max-w-2xl mx-auto">
-
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => navigate('/admin/products')}
+            onClick={() => navigate("/admin/products")}
             className="text-gray-400 hover:text-white text-sm transition mb-4
                        flex items-center gap-2"
           >
             ← Back to Products
           </button>
           <h1 className="text-3xl font-bold text-white">
-            {isEditMode ? 'Edit Product' : 'Add New Product'}
+            {isEditMode ? "Edit Product" : "Add New Product"}
           </h1>
           <p className="text-gray-400 text-sm mt-1">
             {isEditMode
-              ? 'Update product details below'
-              : 'Fill in the details to add a new product'
-            }
+              ? "Update product details below"
+              : "Fill in the details to add a new product"}
           </p>
         </div>
 
         {/* Success message */}
         {success && (
-          <div className="bg-green-900 border border-green-700 text-green-300
-                          rounded-lg px-4 py-3 mb-6 text-sm flex items-center gap-2">
+          <div
+            className="bg-green-900 border border-green-700 text-green-300
+                          rounded-lg px-4 py-3 mb-6 text-sm flex items-center gap-2"
+          >
             ✅ {success}
           </div>
         )}
 
         {/* Error message */}
         {error && (
-          <div className="bg-red-900 border border-red-700 text-red-300
-                          rounded-lg px-4 py-3 mb-6 text-sm">
+          <div
+            className="bg-red-900 border border-red-700 text-red-300
+                          rounded-lg px-4 py-3 mb-6 text-sm"
+          >
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-
           {/* ---- IMAGE UPLOAD SECTION ---- */}
           <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6">
             <h2 className="text-white font-semibold mb-4">Product Image</h2>
 
             {/* Image preview */}
             <div className="mb-4">
-              <div className="w-full h-56 bg-gray-700 rounded-xl overflow-hidden
+              <div
+                className="w-full h-56 bg-gray-700 rounded-xl overflow-hidden
                               flex items-center justify-center border-2 border-dashed
-                              border-gray-600">
+                              border-gray-600"
+              >
                 {imagePreview ? (
                   <img
                     src={imagePreview}
@@ -258,9 +259,7 @@ function ProductForm() {
                 ) : (
                   <div className="text-center">
                     <p className="text-5xl mb-3">🖼️</p>
-                    <p className="text-gray-400 text-sm">
-                      No image selected
-                    </p>
+                    <p className="text-gray-400 text-sm">No image selected</p>
                     <p className="text-gray-500 text-xs mt-1">
                       JPG, PNG, WEBP — max 5MB
                     </p>
@@ -342,7 +341,6 @@ function ProductForm() {
 
             {/* Price + Stock row */}
             <div className="grid grid-cols-2 gap-4">
-
               {/* Price */}
               <div>
                 <label className="block text-gray-300 text-sm font-medium mb-2">
@@ -381,7 +379,6 @@ function ProductForm() {
                              placeholder-gray-500 transition"
                 />
               </div>
-
             </div>
 
             {/* Category */}
@@ -407,7 +404,6 @@ function ProductForm() {
                 <option value="Sports">Sports</option>
               </select>
             </div>
-
           </div>
 
           {/* ---- SUBMIT BUTTON ---- */}
@@ -421,19 +417,22 @@ function ProductForm() {
           >
             {loading ? (
               <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent
-                                rounded-full animate-spin"></div>
-                {isEditMode ? 'Updating...' : 'Adding Product...'}
+                <div
+                  className="w-5 h-5 border-2 border-white border-t-transparent
+                                rounded-full animate-spin"
+                ></div>
+                {isEditMode ? "Updating..." : "Adding Product..."}
               </>
+            ) : isEditMode ? (
+              "✅ Update Product"
             ) : (
-              isEditMode ? '✅ Update Product' : '➕ Add Product'
+              "➕ Add Product"
             )}
           </button>
-
         </form>
       </div>
     </div>
-  )
+  );
 }
 
-export default ProductForm
+export default ProductForm;

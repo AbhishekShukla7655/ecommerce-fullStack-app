@@ -1,74 +1,72 @@
-import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import api from '../../services/api'
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import api from "../../services/api";
+import { getImageUrl } from "../services/imageHelper";
 
 // Status badge colors
 const statusColors = {
-  PENDING:   'bg-yellow-900 text-yellow-300 border border-yellow-700',
-  CONFIRMED: 'bg-blue-900 text-blue-300 border border-blue-700',
-  DELIVERED: 'bg-green-900 text-green-300 border border-green-700',
-}
+  PENDING: "bg-yellow-900 text-yellow-300 border border-yellow-700",
+  CONFIRMED: "bg-blue-900 text-blue-300 border border-blue-700",
+  DELIVERED: "bg-green-900 text-green-300 border border-green-700",
+};
 
 // Status emoji
 const statusEmoji = {
-  PENDING:   '⏳',
-  CONFIRMED: '📦',
-  DELIVERED: '✅',
-}
+  PENDING: "⏳",
+  CONFIRMED: "📦",
+  DELIVERED: "✅",
+};
 
 function ManageOrders() {
-  const [orders,   setOrders]   = useState([])
-  const [loading,  setLoading]  = useState(true)
-  const [error,    setError]    = useState('')
-  const [updating, setUpdating] = useState(null) // konsa order update ho raha hai
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [updating, setUpdating] = useState(null); // konsa order update ho raha hai
 
   // Page load hote hi orders fetch karo
   useEffect(() => {
-    fetchOrders()
-  }, [])
+    fetchOrders();
+  }, []);
 
   const fetchOrders = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       // GET /api/admin/orders — ADMIN JWT required
-      const res = await api.get('/admin/orders')
-      setOrders(res.data)
+      const res = await api.get("/admin/orders");
+      setOrders(res.data);
     } catch (err) {
-      setError('Failed to load orders.')
-      console.error(err)
+      setError("Failed to load orders.");
+      console.error(err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // -----------------------------------------------
   // Order status update karo
   // -----------------------------------------------
   const handleStatusUpdate = async (orderId, newStatus) => {
-    setUpdating(orderId)
+    setUpdating(orderId);
 
     try {
       // PUT /api/admin/orders/{id}/status
       const res = await api.put(`/admin/orders/${orderId}/status`, {
-        status: newStatus
-      })
+        status: newStatus,
+      });
 
       // Local state update karo — page reload ki zaroorat nahi
-      setOrders(prev =>
-        prev.map(order =>
-          order.id === orderId
-            ? { ...order, status: res.data.status }
-            : order
-        )
-      )
-
+      setOrders((prev) =>
+        prev.map((order) =>
+          order.id === orderId ? { ...order, status: res.data.status } : order,
+        ),
+      );
     } catch (err) {
-      console.error('Status update failed:', err)
-      alert('Failed to update status. Please try again.')
+      console.error("Status update failed:", err);
+      alert("Failed to update status. Please try again.");
     } finally {
-      setUpdating(null)
+      setUpdating(null);
     }
-  }
+  };
 
   // -----------------------------------------------
   // LOADING
@@ -77,12 +75,14 @@ function ManageOrders() {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent
-                          rounded-full animate-spin mx-auto mb-4"></div>
+          <div
+            className="w-12 h-12 border-4 border-purple-600 border-t-transparent
+                          rounded-full animate-spin mx-auto mb-4"
+          ></div>
           <p className="text-gray-400">Loading orders...</p>
         </div>
       </div>
-    )
+    );
   }
 
   // -----------------------------------------------
@@ -102,7 +102,7 @@ function ManageOrders() {
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   // -----------------------------------------------
@@ -111,7 +111,6 @@ function ManageOrders() {
   return (
     <div className="min-h-screen bg-gray-900 py-8 px-4">
       <div className="max-w-6xl mx-auto">
-
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -119,7 +118,7 @@ function ManageOrders() {
               Manage Orders
             </h1>
             <p className="text-gray-400 text-sm">
-              {orders.length} total order{orders.length !== 1 ? 's' : ''}
+              {orders.length} total order{orders.length !== 1 ? "s" : ""}
             </p>
           </div>
 
@@ -134,11 +133,10 @@ function ManageOrders() {
 
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-4 mb-8">
-
           {/* Pending count */}
           <div className="bg-gray-800 rounded-xl border border-yellow-800 p-4 text-center">
             <p className="text-3xl font-bold text-yellow-300">
-              {orders.filter(o => o.status === 'PENDING').length}
+              {orders.filter((o) => o.status === "PENDING").length}
             </p>
             <p className="text-yellow-600 text-xs mt-1">⏳ Pending</p>
           </div>
@@ -146,7 +144,7 @@ function ManageOrders() {
           {/* Confirmed count */}
           <div className="bg-gray-800 rounded-xl border border-blue-800 p-4 text-center">
             <p className="text-3xl font-bold text-blue-300">
-              {orders.filter(o => o.status === 'CONFIRMED').length}
+              {orders.filter((o) => o.status === "CONFIRMED").length}
             </p>
             <p className="text-blue-600 text-xs mt-1">📦 Confirmed</p>
           </div>
@@ -154,11 +152,10 @@ function ManageOrders() {
           {/* Delivered count */}
           <div className="bg-gray-800 rounded-xl border border-green-800 p-4 text-center">
             <p className="text-3xl font-bold text-green-300">
-              {orders.filter(o => o.status === 'DELIVERED').length}
+              {orders.filter((o) => o.status === "DELIVERED").length}
             </p>
             <p className="text-green-600 text-xs mt-1">✅ Delivered</p>
           </div>
-
         </div>
 
         {/* Empty state */}
@@ -176,19 +173,18 @@ function ManageOrders() {
 
         {/* ---- ORDERS LIST ---- */}
         <div className="space-y-4">
-          {orders.map(order => (
+          {orders.map((order) => (
             <div
               key={order.id}
               className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden"
             >
-
               {/* Order header row */}
-              <div className="flex flex-wrap items-center justify-between
-                              gap-4 px-6 py-4 border-b border-gray-700">
-
+              <div
+                className="flex flex-wrap items-center justify-between
+                              gap-4 px-6 py-4 border-b border-gray-700"
+              >
                 {/* Left: Order info */}
                 <div className="flex items-center gap-6">
-
                   {/* Order ID */}
                   <div>
                     <p className="text-gray-400 text-xs">Order ID</p>
@@ -199,10 +195,10 @@ function ManageOrders() {
                   <div>
                     <p className="text-gray-400 text-xs">Date</p>
                     <p className="text-white text-sm">
-                      {new Date(order.createdAt).toLocaleDateString('en-IN', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric'
+                      {new Date(order.createdAt).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
                       })}
                     </p>
                   </div>
@@ -211,7 +207,7 @@ function ManageOrders() {
                   <div>
                     <p className="text-gray-400 text-xs">Total</p>
                     <p className="text-purple-400 font-bold">
-                      ₹{order.totalAmount?.toLocaleString('en-IN')}
+                      ₹{order.totalAmount?.toLocaleString("en-IN")}
                     </p>
                   </div>
 
@@ -222,16 +218,18 @@ function ManageOrders() {
                       {order.orderItems?.length}
                     </p>
                   </div>
-
                 </div>
 
                 {/* Right: Status badge + dropdown */}
                 <div className="flex items-center gap-3">
-
                   {/* Current status badge */}
-                  <span className={`text-xs font-medium px-3 py-1 rounded-full
-                                   ${statusColors[order.status] ||
-                                     'bg-gray-700 text-gray-300'}`}>
+                  <span
+                    className={`text-xs font-medium px-3 py-1 rounded-full
+                                   ${
+                                     statusColors[order.status] ||
+                                     "bg-gray-700 text-gray-300"
+                                   }`}
+                  >
                     {statusEmoji[order.status]} {order.status}
                   </span>
 
@@ -254,50 +252,50 @@ function ManageOrders() {
 
                   {/* Loading spinner when updating */}
                   {updating === order.id && (
-                    <div className="w-4 h-4 border-2 border-purple-400
-                                    border-t-transparent rounded-full animate-spin">
-                    </div>
+                    <div
+                      className="w-4 h-4 border-2 border-purple-400
+                                    border-t-transparent rounded-full animate-spin"
+                    ></div>
                   )}
-
                 </div>
               </div>
 
               {/* Order items */}
               <div className="px-6 py-4">
-                <p className="text-gray-400 text-xs font-medium uppercase
-                               tracking-wide mb-3">
+                <p
+                  className="text-gray-400 text-xs font-medium uppercase
+                               tracking-wide mb-3"
+                >
                   Items
                 </p>
 
                 <div className="space-y-3">
                   {order.orderItems?.map((item, index) => {
-                    const imageUrl = item.productImageUrl
-                      ? `http://localhost:8080/images/${item.productImageUrl}`
-                      : null
+                    const imageUrl = getImageUrl(product.imageUrl);
 
                     return (
-                      <div key={index}
-                           className="flex items-center gap-3">
-
+                      <div key={index} className="flex items-center gap-3">
                         {/* Thumbnail */}
-                        <div className="w-10 h-10 bg-gray-700 rounded-lg
+                        <div
+                          className="w-10 h-10 bg-gray-700 rounded-lg
                                         overflow-hidden flex-shrink-0
-                                        flex items-center justify-center">
+                                        flex items-center justify-center"
+                        >
                           {imageUrl ? (
                             <img
                               src={imageUrl}
                               alt={item.productName}
                               className="w-full h-full object-cover"
                               onError={(e) => {
-                                e.target.style.display = 'none'
-                                e.target.nextSibling.style.display = 'flex'
+                                e.target.style.display = "none";
+                                e.target.nextSibling.style.display = "flex";
                               }}
                             />
                           ) : null}
                           <div
                             className="w-full h-full flex items-center
                                        justify-center text-sm text-gray-500"
-                            style={{ display: imageUrl ? 'none' : 'flex' }}
+                            style={{ display: imageUrl ? "none" : "flex" }}
                           >
                             📦
                           </div>
@@ -309,31 +307,32 @@ function ManageOrders() {
                             {item.productName}
                           </p>
                           <p className="text-gray-400 text-xs">
-                            Qty: {item.quantity} ×
-                            ₹{item.price?.toLocaleString('en-IN')}
+                            Qty: {item.quantity} × ₹
+                            {item.price?.toLocaleString("en-IN")}
                           </p>
                         </div>
 
                         {/* Item total */}
-                        <p className="text-gray-300 text-sm font-medium
-                                      flex-shrink-0">
-                          ₹{(item.price * item.quantity)
-                              ?.toLocaleString('en-IN')}
+                        <p
+                          className="text-gray-300 text-sm font-medium
+                                      flex-shrink-0"
+                        >
+                          ₹
+                          {(item.price * item.quantity)?.toLocaleString(
+                            "en-IN",
+                          )}
                         </p>
-
                       </div>
-                    )
+                    );
                   })}
                 </div>
-
               </div>
             </div>
           ))}
         </div>
-
       </div>
     </div>
-  )
+  );
 }
 
-export default ManageOrders
+export default ManageOrders;

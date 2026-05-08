@@ -1,32 +1,32 @@
-import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import api from '../../services/api'
-
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../../services/api";
+import { getImageUrl } from "../services/imageHelper";
 function ManageProducts() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const [products, setProducts] = useState([])
-  const [loading,  setLoading]  = useState(true)
-  const [error,    setError]    = useState('')
-  const [deleting, setDeleting] = useState(null) // konsa product delete ho raha hai
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [deleting, setDeleting] = useState(null); // konsa product delete ho raha hai
 
   // Page load hote hi products fetch karo
   useEffect(() => {
-    fetchProducts()
-  }, [])
+    fetchProducts();
+  }, []);
 
   const fetchProducts = async () => {
     try {
-      setLoading(true)
-      const res = await api.get('/products')
-      setProducts(res.data)
+      setLoading(true);
+      const res = await api.get("/products");
+      setProducts(res.data);
     } catch (err) {
-      setError('Failed to load products.')
-      console.error(err)
+      setError("Failed to load products.");
+      console.error(err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // -----------------------------------------------
   // Delete product
@@ -34,25 +34,24 @@ function ManageProducts() {
   const handleDelete = async (productId, productName) => {
     // Confirm karo pehle
     if (!window.confirm(`Delete "${productName}"? This cannot be undone.`)) {
-      return
+      return;
     }
 
-    setDeleting(productId)
+    setDeleting(productId);
 
     try {
       // DELETE /api/products/{id} — ADMIN JWT required
-      await api.delete(`/products/${productId}`)
+      await api.delete(`/products/${productId}`);
 
       // UI se bhi remove karo — page reload ki zaroorat nahi
-      setProducts(prev => prev.filter(p => p.id !== productId))
-
+      setProducts((prev) => prev.filter((p) => p.id !== productId));
     } catch (err) {
-      console.error('Delete failed:', err)
-      alert('Failed to delete product. Please try again.')
+      console.error("Delete failed:", err);
+      alert("Failed to delete product. Please try again.");
     } finally {
-      setDeleting(null)
+      setDeleting(null);
     }
-  }
+  };
 
   // -----------------------------------------------
   // LOADING
@@ -61,12 +60,14 @@ function ManageProducts() {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent
-                          rounded-full animate-spin mx-auto mb-4"></div>
+          <div
+            className="w-12 h-12 border-4 border-purple-600 border-t-transparent
+                          rounded-full animate-spin mx-auto mb-4"
+          ></div>
           <p className="text-gray-400">Loading products...</p>
         </div>
       </div>
-    )
+    );
   }
 
   // -----------------------------------------------
@@ -75,7 +76,6 @@ function ManageProducts() {
   return (
     <div className="min-h-screen bg-gray-900 py-8 px-4">
       <div className="max-w-7xl mx-auto">
-
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -83,7 +83,7 @@ function ManageProducts() {
               Manage Products
             </h1>
             <p className="text-gray-400 text-sm">
-              {products.length} product{products.length !== 1 ? 's' : ''} total
+              {products.length} product{products.length !== 1 ? "s" : ""} total
             </p>
           </div>
 
@@ -108,8 +108,10 @@ function ManageProducts() {
 
         {/* Error */}
         {error && (
-          <div className="bg-red-900 border border-red-700 text-red-300
-                          rounded-lg px-4 py-3 mb-6 text-sm">
+          <div
+            className="bg-red-900 border border-red-700 text-red-300
+                          rounded-lg px-4 py-3 mb-6 text-sm"
+          >
             {error}
           </div>
         )}
@@ -137,11 +139,12 @@ function ManageProducts() {
         {/* ---- PRODUCTS TABLE ---- */}
         {products.length > 0 && (
           <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
-
             {/* Table header */}
-            <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-750
+            <div
+              className="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-750
                             border-b border-gray-700 text-xs font-medium
-                            text-gray-400 uppercase tracking-wide">
+                            text-gray-400 uppercase tracking-wide"
+            >
               <div className="col-span-1">Image</div>
               <div className="col-span-3">Product</div>
               <div className="col-span-2">Category</div>
@@ -152,11 +155,8 @@ function ManageProducts() {
 
             {/* Table rows */}
             <div className="divide-y divide-gray-700">
-              {products.map(product => {
-
-                const imageUrl = product.imageUrl
-                  ? `http://localhost:8080/images/${product.imageUrl}`
-                  : null
+              {products.map((product) => {
+                import { getImageUrl } from "../services/imageHelper";
 
                 return (
                   <div
@@ -164,26 +164,27 @@ function ManageProducts() {
                     className="grid grid-cols-12 gap-4 px-6 py-4 items-center
                                hover:bg-gray-750 transition"
                   >
-
                     {/* Image thumbnail */}
                     <div className="col-span-1">
-                      <div className="w-12 h-12 bg-gray-700 rounded-lg overflow-hidden
-                                      flex items-center justify-center flex-shrink-0">
+                      <div
+                        className="w-12 h-12 bg-gray-700 rounded-lg overflow-hidden
+                                      flex items-center justify-center flex-shrink-0"
+                      >
                         {imageUrl ? (
                           <img
                             src={imageUrl}
                             alt={product.name}
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              e.target.style.display = 'none'
-                              e.target.nextSibling.style.display = 'flex'
+                              e.target.style.display = "none";
+                              e.target.nextSibling.style.display = "flex";
                             }}
                           />
                         ) : null}
                         <div
                           className="w-full h-full flex items-center justify-center
                                      text-xl text-gray-500"
-                          style={{ display: imageUrl ? 'none' : 'flex' }}
+                          style={{ display: imageUrl ? "none" : "flex" }}
                         >
                           📦
                         </div>
@@ -196,14 +197,16 @@ function ManageProducts() {
                         {product.name}
                       </p>
                       <p className="text-gray-400 text-xs truncate mt-0.5">
-                        {product.description || 'No description'}
+                        {product.description || "No description"}
                       </p>
                     </div>
 
                     {/* Category */}
                     <div className="col-span-2">
-                      <span className="bg-gray-700 text-gray-300 text-xs
-                                       px-2 py-1 rounded-full">
+                      <span
+                        className="bg-gray-700 text-gray-300 text-xs
+                                       px-2 py-1 rounded-full"
+                      >
                         {product.category}
                       </span>
                     </div>
@@ -211,26 +214,28 @@ function ManageProducts() {
                     {/* Price */}
                     <div className="col-span-2">
                       <p className="text-white font-semibold text-sm">
-                        ₹{product.price?.toLocaleString('en-IN')}
+                        ₹{product.price?.toLocaleString("en-IN")}
                       </p>
                     </div>
 
                     {/* Stock */}
                     <div className="col-span-1">
-                      <span className={`text-xs font-medium
-                        ${product.stock === 0
-                          ? 'text-red-400'
-                          : product.stock <= 5
-                            ? 'text-orange-400'
-                            : 'text-green-400'
-                        }`}>
-                        {product.stock === 0 ? 'Out' : product.stock}
+                      <span
+                        className={`text-xs font-medium
+                        ${
+                          product.stock === 0
+                            ? "text-red-400"
+                            : product.stock <= 5
+                              ? "text-orange-400"
+                              : "text-green-400"
+                        }`}
+                      >
+                        {product.stock === 0 ? "Out" : product.stock}
                       </span>
                     </div>
 
                     {/* Action buttons */}
                     <div className="col-span-3 flex items-center justify-end gap-2">
-
                       {/* View button */}
                       <Link
                         to={`/products/${product.id}`}
@@ -258,21 +263,18 @@ function ManageProducts() {
                                    text-xs px-3 py-1.5 rounded-lg transition
                                    disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {deleting === product.id ? '...' : 'Delete'}
+                        {deleting === product.id ? "..." : "Delete"}
                       </button>
-
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
-
           </div>
         )}
-
       </div>
     </div>
-  )
+  );
 }
 
-export default ManageProducts
+export default ManageProducts;

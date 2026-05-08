@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { getImageUrl } from "../services/imageHelper";
 import {
   setCartItems,
   updateCartItem,
@@ -9,43 +10,43 @@ import {
   selectCartItems,
   selectTotalItems,
   selectTotalPrice,
-} from '../features/cart/cartSlice'
-import api from '../services/api'
+} from "../features/cart/cartSlice";
+import api from "../services/api";
 
 function CartPage() {
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   // Redux se cart state read karo
-  const cartItems  = useSelector(selectCartItems)
-  const totalItems = useSelector(selectTotalItems)
-  const totalPrice = useSelector(selectTotalPrice)
+  const cartItems = useSelector(selectCartItems);
+  const totalItems = useSelector(selectTotalItems);
+  const totalPrice = useSelector(selectTotalPrice);
 
-  const [loading,  setLoading]  = useState(true)
-  const [updating, setUpdating] = useState(null) // konsa item update ho raha hai
-  const [removing, setRemoving] = useState(null) // konsa item remove ho raha hai
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(null); // konsa item update ho raha hai
+  const [removing, setRemoving] = useState(null); // konsa item remove ho raha hai
 
   // -----------------------------------------------
   // Page load hote hi cart fetch karo backend se
   // -----------------------------------------------
   useEffect(() => {
-    fetchCart()
-  }, [])
+    fetchCart();
+  }, []);
 
   const fetchCart = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       // GET /api/cart — JWT automatically attach hoga (api.js interceptor)
-      const res = await api.get('/cart')
+      const res = await api.get("/cart");
 
       // Redux mein save karo — totalItems aur totalPrice bhi update honge
-      dispatch(setCartItems(res.data))
+      dispatch(setCartItems(res.data));
     } catch (err) {
-      console.error('Failed to fetch cart:', err)
+      console.error("Failed to fetch cart:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // -----------------------------------------------
   // Quantity update: + ya - button click
@@ -53,45 +54,45 @@ function CartPage() {
   const handleQuantityChange = async (cartItemId, newQuantity) => {
     // 0 ya usse kam hoga toh remove karo
     if (newQuantity < 1) {
-      handleRemove(cartItemId)
-      return
+      handleRemove(cartItemId);
+      return;
     }
 
-    setUpdating(cartItemId)
+    setUpdating(cartItemId);
 
     try {
       // PUT /api/cart/{id}
-      await api.put(`/cart/${cartItemId}`, { quantity: newQuantity })
+      await api.put(`/cart/${cartItemId}`, { quantity: newQuantity });
 
       // Redux update karo
-      dispatch(updateCartItem({ id: cartItemId, quantity: newQuantity }))
+      dispatch(updateCartItem({ id: cartItemId, quantity: newQuantity }));
     } catch (err) {
-      console.error('Failed to update quantity:', err)
-      alert('Failed to update quantity')
+      console.error("Failed to update quantity:", err);
+      alert("Failed to update quantity");
     } finally {
-      setUpdating(null)
+      setUpdating(null);
     }
-  }
+  };
 
   // -----------------------------------------------
   // Item remove karo
   // -----------------------------------------------
   const handleRemove = async (cartItemId) => {
-    setRemoving(cartItemId)
+    setRemoving(cartItemId);
 
     try {
       // DELETE /api/cart/{id}
-      await api.delete(`/cart/${cartItemId}`)
+      await api.delete(`/cart/${cartItemId}`);
 
       // Redux se bhi hatao
-      dispatch(removeCartItem(cartItemId))
+      dispatch(removeCartItem(cartItemId));
     } catch (err) {
-      console.error('Failed to remove item:', err)
-      alert('Failed to remove item')
+      console.error("Failed to remove item:", err);
+      alert("Failed to remove item");
     } finally {
-      setRemoving(null)
+      setRemoving(null);
     }
-  }
+  };
 
   // -----------------------------------------------
   // LOADING STATE
@@ -100,12 +101,14 @@ function CartPage() {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent
-                          rounded-full animate-spin mx-auto mb-4"></div>
+          <div
+            className="w-12 h-12 border-4 border-purple-600 border-t-transparent
+                          rounded-full animate-spin mx-auto mb-4"
+          ></div>
           <p className="text-gray-400">Loading your cart...</p>
         </div>
       </div>
-    )
+    );
   }
 
   // -----------------------------------------------
@@ -131,7 +134,7 @@ function CartPage() {
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   // -----------------------------------------------
@@ -140,28 +143,27 @@ function CartPage() {
   return (
     <div className="min-h-screen bg-gray-900 py-8 px-4">
       <div className="max-w-4xl mx-auto">
-
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-white">
             Your Cart
             <span className="text-gray-400 text-lg font-normal ml-3">
-              ({totalItems} {totalItems === 1 ? 'item' : 'items'})
+              ({totalItems} {totalItems === 1 ? "item" : "items"})
             </span>
           </h1>
 
           {/* Clear entire cart button */}
           <button
             onClick={async () => {
-              if (!window.confirm('Clear entire cart?')) return
+              if (!window.confirm("Clear entire cart?")) return;
               try {
                 // Remove each item one by one
                 for (const item of cartItems) {
-                  await api.delete(`/cart/${item.id}`)
+                  await api.delete(`/cart/${item.id}`);
                 }
-                dispatch(clearCart())
+                dispatch(clearCart());
               } catch (err) {
-                console.error('Failed to clear cart:', err)
+                console.error("Failed to clear cart:", err);
               }
             }}
             className="text-red-400 hover:text-red-300 text-sm transition"
@@ -171,15 +173,10 @@ function CartPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
           {/* ---- LEFT: Cart Items List ---- */}
           <div className="lg:col-span-2 space-y-4">
-            {cartItems.map(item => {
-
-              // Image URL build karo
-              const imageUrl = item.product?.imageUrl
-                ? `http://localhost:8080/images/${item.product.imageUrl}`
-                : null
+            {cartItems.map((item) => {
+              const imageUrl = getImageUrl(product.imageUrl);
 
               return (
                 <div
@@ -188,23 +185,25 @@ function CartPage() {
                              flex gap-4 items-center"
                 >
                   {/* Product image thumbnail */}
-                  <div className="w-20 h-20 bg-gray-700 rounded-lg overflow-hidden
-                                  flex-shrink-0 flex items-center justify-center">
+                  <div
+                    className="w-20 h-20 bg-gray-700 rounded-lg overflow-hidden
+                                  flex-shrink-0 flex items-center justify-center"
+                  >
                     {imageUrl ? (
                       <img
                         src={imageUrl}
                         alt={item.product?.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          e.target.style.display = 'none'
-                          e.target.nextSibling.style.display = 'flex'
+                          e.target.style.display = "none";
+                          e.target.nextSibling.style.display = "flex";
                         }}
                       />
                     ) : null}
                     <div
                       className="w-full h-full flex items-center justify-center
                                  text-2xl text-gray-500"
-                      style={{ display: imageUrl ? 'none' : 'flex' }}
+                      style={{ display: imageUrl ? "none" : "flex" }}
                     >
                       📦
                     </div>
@@ -223,7 +222,7 @@ function CartPage() {
                       {item.product?.category}
                     </p>
                     <p className="text-purple-400 font-bold text-sm mt-1">
-                      ₹{item.product?.price?.toLocaleString('en-IN')}
+                      ₹{item.product?.price?.toLocaleString("en-IN")}
                     </p>
                   </div>
 
@@ -265,8 +264,10 @@ function CartPage() {
                   {/* Item total price */}
                   <div className="text-right flex-shrink-0 min-w-16">
                     <p className="text-white font-bold text-sm">
-                      ₹{(item.product?.price * item.quantity)
-                          ?.toLocaleString('en-IN')}
+                      ₹
+                      {(item.product?.price * item.quantity)?.toLocaleString(
+                        "en-IN",
+                      )}
                     </p>
                   </div>
 
@@ -278,32 +279,35 @@ function CartPage() {
                                text-lg flex-shrink-0 disabled:opacity-50"
                     title="Remove item"
                   >
-                    {removing === item.id ? '...' : '✕'}
+                    {removing === item.id ? "..." : "✕"}
                   </button>
-
                 </div>
-              )
+              );
             })}
           </div>
 
           {/* ---- RIGHT: Order Summary ---- */}
           <div className="lg:col-span-1">
-            <div className="bg-gray-800 rounded-xl border border-gray-700 p-6
-                            sticky top-24">
+            <div
+              className="bg-gray-800 rounded-xl border border-gray-700 p-6
+                            sticky top-24"
+            >
               <h2 className="text-white font-bold text-lg mb-6">
                 Order Summary
               </h2>
 
               {/* Items breakdown */}
               <div className="space-y-3 mb-6">
-                {cartItems.map(item => (
+                {cartItems.map((item) => (
                   <div key={item.id} className="flex justify-between text-sm">
                     <span className="text-gray-400 truncate mr-2">
                       {item.product?.name} × {item.quantity}
                     </span>
                     <span className="text-gray-300 flex-shrink-0">
-                      ₹{(item.product?.price * item.quantity)
-                          ?.toLocaleString('en-IN')}
+                      ₹
+                      {(item.product?.price * item.quantity)?.toLocaleString(
+                        "en-IN",
+                      )}
                     </span>
                   </div>
                 ))}
@@ -314,17 +318,17 @@ function CartPage() {
                 <div className="flex justify-between items-center">
                   <span className="text-white font-semibold">Total</span>
                   <span className="text-purple-400 font-bold text-xl">
-                    ₹{totalPrice?.toLocaleString('en-IN')}
+                    ₹{totalPrice?.toLocaleString("en-IN")}
                   </span>
                 </div>
                 <p className="text-gray-500 text-xs mt-1">
-                  {totalItems} {totalItems === 1 ? 'item' : 'items'}
+                  {totalItems} {totalItems === 1 ? "item" : "items"}
                 </p>
               </div>
 
               {/* Checkout button */}
               <button
-                onClick={() => navigate('/checkout')}
+                onClick={() => navigate("/checkout")}
                 className="w-full bg-purple-600 hover:bg-purple-700 text-white
                            font-semibold py-3 rounded-xl transition text-sm"
               >
@@ -339,14 +343,12 @@ function CartPage() {
               >
                 ← Continue Shopping
               </Link>
-
             </div>
           </div>
-
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default CartPage
+export default CartPage;

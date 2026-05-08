@@ -1,26 +1,27 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { getImageUrl } from "../services/imageHelper";
 import {
   selectCartItems,
   selectTotalItems,
   selectTotalPrice,
   setCartItems,
   clearCart,
-} from '../features/cart/cartSlice'
-import api from '../services/api'
+} from "../features/cart/cartSlice";
+import api from "../services/api";
 
 function CheckoutPage() {
-  const navigate   = useNavigate()
-  const dispatch   = useDispatch()
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const cartItems  = useSelector(selectCartItems)
-  const totalItems = useSelector(selectTotalItems)
-  const totalPrice = useSelector(selectTotalPrice)
+  const cartItems = useSelector(selectCartItems);
+  const totalItems = useSelector(selectTotalItems);
+  const totalPrice = useSelector(selectTotalPrice);
 
-  const [loading,   setLoading]   = useState(false)
-  const [pageLoad,  setPageLoad]  = useState(true)
-  const [error,     setError]     = useState('')
+  const [loading, setLoading] = useState(false);
+  const [pageLoad, setPageLoad] = useState(true);
+  const [error, setError] = useState("");
 
   // -----------------------------------------------
   // Agar Redux mein cart empty hai toh
@@ -30,46 +31,45 @@ function CheckoutPage() {
     const loadCart = async () => {
       if (cartItems.length === 0) {
         try {
-          const res = await api.get('/cart')
-          dispatch(setCartItems(res.data))
+          const res = await api.get("/cart");
+          dispatch(setCartItems(res.data));
         } catch (err) {
-          console.error('Failed to load cart:', err)
+          console.error("Failed to load cart:", err);
         }
       }
-      setPageLoad(false)
-    }
-    loadCart()
-  }, [])
+      setPageLoad(false);
+    };
+    loadCart();
+  }, []);
 
   // -----------------------------------------------
   // Confirm Payment — order place karo
   // -----------------------------------------------
   const handleConfirmPayment = async () => {
-    setLoading(true)
-    setError('')
+    setLoading(true);
+    setError("");
 
     try {
       // POST /api/orders — backend cart se order banata hai automatically
-      const res = await api.post('/orders')
+      const res = await api.post("/orders");
 
       // Redux cart clear karo — order place ho gaya
-      dispatch(clearCart())
+      dispatch(clearCart());
 
       // Order confirmation page pe bhejo with order data
-      navigate('/order-confirmation', {
-        state: { order: res.data } // order data pass karo
-      })
-
+      navigate("/order-confirmation", {
+        state: { order: res.data }, // order data pass karo
+      });
     } catch (err) {
-      console.error('Order failed:', err)
+      console.error("Order failed:", err);
       setError(
         err.response?.data?.message ||
-        'Failed to place order. Please try again.'
-      )
+          "Failed to place order. Please try again.",
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // -----------------------------------------------
   // PAGE LOADING
@@ -77,10 +77,12 @@ function CheckoutPage() {
   if (pageLoad) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent
-                        rounded-full animate-spin"></div>
+        <div
+          className="w-12 h-12 border-4 border-purple-600 border-t-transparent
+                        rounded-full animate-spin"
+        ></div>
       </div>
-    )
+    );
   }
 
   // -----------------------------------------------
@@ -95,7 +97,7 @@ function CheckoutPage() {
             Your cart is empty
           </p>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="bg-purple-600 hover:bg-purple-700 text-white
                        px-6 py-3 rounded-xl transition font-semibold"
           >
@@ -103,7 +105,7 @@ function CheckoutPage() {
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   // -----------------------------------------------
@@ -112,7 +114,6 @@ function CheckoutPage() {
   return (
     <div className="min-h-screen bg-gray-900 py-8 px-4">
       <div className="max-w-2xl mx-auto">
-
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Checkout</h1>
@@ -121,39 +122,40 @@ function CheckoutPage() {
 
         {/* ---- ORDER SUMMARY CARD ---- */}
         <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6">
-          <h2 className="text-white font-bold text-lg mb-5 pb-3
-                         border-b border-gray-700">
+          <h2
+            className="text-white font-bold text-lg mb-5 pb-3
+                         border-b border-gray-700"
+          >
             Order Summary
           </h2>
 
           {/* Cart items list */}
           <div className="space-y-4 mb-6">
-            {cartItems.map(item => {
-              const imageUrl = item.product?.imageUrl
-                ? `http://localhost:8080/images/${item.product.imageUrl}`
-                : null
+            {cartItems.map((item) => {
+              const imageUrl = getImageUrl(product.imageUrl);
 
               return (
                 <div key={item.id} className="flex items-center gap-4">
-
                   {/* Thumbnail */}
-                  <div className="w-14 h-14 bg-gray-700 rounded-lg overflow-hidden
-                                  flex-shrink-0 flex items-center justify-center">
+                  <div
+                    className="w-14 h-14 bg-gray-700 rounded-lg overflow-hidden
+                                  flex-shrink-0 flex items-center justify-center"
+                  >
                     {imageUrl ? (
                       <img
                         src={imageUrl}
                         alt={item.product?.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          e.target.style.display = 'none'
-                          e.target.nextSibling.style.display = 'flex'
+                          e.target.style.display = "none";
+                          e.target.nextSibling.style.display = "flex";
                         }}
                       />
                     ) : null}
                     <div
                       className="w-full h-full flex items-center justify-center
                                  text-xl text-gray-500"
-                      style={{ display: imageUrl ? 'none' : 'flex' }}
+                      style={{ display: imageUrl ? "none" : "flex" }}
                     >
                       📦
                     </div>
@@ -165,19 +167,20 @@ function CheckoutPage() {
                       {item.product?.name}
                     </p>
                     <p className="text-gray-400 text-xs">
-                      Qty: {item.quantity} ×
-                      ₹{item.product?.price?.toLocaleString('en-IN')}
+                      Qty: {item.quantity} × ₹
+                      {item.product?.price?.toLocaleString("en-IN")}
                     </p>
                   </div>
 
                   {/* Item subtotal */}
                   <p className="text-white font-semibold text-sm flex-shrink-0">
-                    ₹{(item.product?.price * item.quantity)
-                        ?.toLocaleString('en-IN')}
+                    ₹
+                    {(item.product?.price * item.quantity)?.toLocaleString(
+                      "en-IN",
+                    )}
                   </p>
-
                 </div>
-              )
+              );
             })}
           </div>
 
@@ -188,7 +191,7 @@ function CheckoutPage() {
                 Subtotal ({totalItems} items)
               </span>
               <span className="text-gray-300">
-                ₹{totalPrice?.toLocaleString('en-IN')}
+                ₹{totalPrice?.toLocaleString("en-IN")}
               </span>
             </div>
             <div className="flex justify-between text-sm">
@@ -201,11 +204,13 @@ function CheckoutPage() {
             </div>
 
             {/* Total */}
-            <div className="flex justify-between items-center pt-3
-                            border-t border-gray-700 mt-2">
+            <div
+              className="flex justify-between items-center pt-3
+                            border-t border-gray-700 mt-2"
+            >
               <span className="text-white font-bold text-lg">Total</span>
               <span className="text-purple-400 font-bold text-2xl">
-                ₹{totalPrice?.toLocaleString('en-IN')}
+                ₹{totalPrice?.toLocaleString("en-IN")}
               </span>
             </div>
           </div>
@@ -229,8 +234,10 @@ function CheckoutPage() {
           </div>
 
           {/* Fake card UI for demo look */}
-          <div className="bg-gradient-to-r from-purple-900 to-purple-700
-                          rounded-xl p-4 text-white">
+          <div
+            className="bg-gradient-to-r from-purple-900 to-purple-700
+                          rounded-xl p-4 text-white"
+          >
             <p className="text-xs text-purple-300 mb-3">DEMO CARD</p>
             <p className="text-lg font-mono tracking-widest mb-3">
               **** **** **** 4242
@@ -250,8 +257,10 @@ function CheckoutPage() {
 
         {/* Error message */}
         {error && (
-          <div className="bg-red-900 border border-red-700 text-red-300
-                          rounded-lg px-4 py-3 mb-6 text-sm">
+          <div
+            className="bg-red-900 border border-red-700 text-red-300
+                          rounded-lg px-4 py-3 mb-6 text-sm"
+          >
             {error}
           </div>
         )}
@@ -267,29 +276,28 @@ function CheckoutPage() {
         >
           {loading ? (
             <>
-              <div className="w-5 h-5 border-2 border-white border-t-transparent
-                              rounded-full animate-spin"></div>
+              <div
+                className="w-5 h-5 border-2 border-white border-t-transparent
+                              rounded-full animate-spin"
+              ></div>
               Placing Order...
             </>
           ) : (
-            <>
-              🔒 Confirm Payment — ₹{totalPrice?.toLocaleString('en-IN')}
-            </>
+            <>🔒 Confirm Payment — ₹{totalPrice?.toLocaleString("en-IN")}</>
           )}
         </button>
 
         {/* Back to cart */}
         <button
-          onClick={() => navigate('/cart')}
+          onClick={() => navigate("/cart")}
           className="w-full text-gray-400 hover:text-white text-sm
                      mt-4 transition text-center"
         >
           ← Back to Cart
         </button>
-
       </div>
     </div>
-  )
+  );
 }
 
-export default CheckoutPage
+export default CheckoutPage;

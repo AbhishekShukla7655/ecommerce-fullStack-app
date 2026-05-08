@@ -1,85 +1,82 @@
-import { useState, useEffect } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-import { addCartItem } from '../features/cart/cartSlice'
-import { selectIsLoggedIn } from '../features/auth/authSlice'
-import api from '../services/api'
+import { useState, useEffect } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { addCartItem } from "../features/cart/cartSlice";
+import { selectIsLoggedIn } from "../features/auth/authSlice";
+import api from "../services/api";
+import { getImageUrl } from "../services/imageHelper";
 
 function ProductDetailPage() {
-  const { id }     = useParams()   // URL se product id lo e.g. /products/3
-  const navigate   = useNavigate()
-  const dispatch   = useDispatch()
-  const isLoggedIn = useSelector(selectIsLoggedIn)
+  const { id } = useParams(); // URL se product id lo e.g. /products/3
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const isLoggedIn = useSelector(selectIsLoggedIn);
 
-  const [product,  setProduct]  = useState(null)
-  const [loading,  setLoading]  = useState(true)
-  const [error,    setError]    = useState('')
-  const [quantity, setQuantity] = useState(1)
-  const [adding,   setAdding]   = useState(false)
-  const [added,    setAdded]    = useState(false) // success feedback
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [quantity, setQuantity] = useState(1);
+  const [adding, setAdding] = useState(false);
+  const [added, setAdded] = useState(false); // success feedback
 
   // -----------------------------------------------
   // Page load hote hi product fetch karo
   // -----------------------------------------------
   useEffect(() => {
-    fetchProduct()
-  }, [id])
+    fetchProduct();
+  }, [id]);
 
   const fetchProduct = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       // GET /api/products/{id}
-      const res = await api.get(`/products/${id}`)
-      setProduct(res.data)
+      const res = await api.get(`/products/${id}`);
+      setProduct(res.data);
     } catch (err) {
-      setError('Product not found or failed to load.')
-      console.error(err)
+      setError("Product not found or failed to load.");
+      console.error(err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // -----------------------------------------------
   // Add to cart handler
   // -----------------------------------------------
   const handleAddToCart = async () => {
     if (!isLoggedIn) {
-      navigate('/login')
-      return
+      navigate("/login");
+      return;
     }
 
     if (product.stock === 0) {
-      alert('This product is out of stock')
-      return
+      alert("This product is out of stock");
+      return;
     }
 
-    setAdding(true)
+    setAdding(true);
 
     try {
-      const res = await api.post('/cart', {
+      const res = await api.post("/cart", {
         productId: product.id,
         quantity: quantity,
-      })
+      });
 
       // Redux update — Navbar badge bhi update hoga
-      dispatch(addCartItem(res.data))
+      dispatch(addCartItem(res.data));
 
       // Success feedback
-      setAdded(true)
-      setTimeout(() => setAdded(false), 2000) // 2 sec baad reset
-
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000); // 2 sec baad reset
     } catch (err) {
-      console.error('Add to cart failed:', err)
-      alert('Failed to add to cart. Please try again.')
+      console.error("Add to cart failed:", err);
+      alert("Failed to add to cart. Please try again.");
     } finally {
-      setAdding(false)
+      setAdding(false);
     }
-  }
+  };
 
-  // Image URL build karo
-  const imageUrl = product?.imageUrl
-    ? `http://localhost:8080/images/${product.imageUrl}`
-    : null
+  const imageUrl = getImageUrl(product.imageUrl);
 
   // -----------------------------------------------
   // LOADING STATE
@@ -88,12 +85,14 @@ function ProductDetailPage() {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent
-                          rounded-full animate-spin mx-auto mb-4"></div>
+          <div
+            className="w-12 h-12 border-4 border-purple-600 border-t-transparent
+                          rounded-full animate-spin mx-auto mb-4"
+          ></div>
           <p className="text-gray-400">Loading product...</p>
         </div>
       </div>
-    )
+    );
   }
 
   // -----------------------------------------------
@@ -114,7 +113,7 @@ function ProductDetailPage() {
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   // -----------------------------------------------
@@ -123,7 +122,6 @@ function ProductDetailPage() {
   return (
     <div className="min-h-screen bg-gray-900 py-8 px-4">
       <div className="max-w-5xl mx-auto">
-
         {/* Back button */}
         <button
           onClick={() => navigate(-1)}
@@ -134,19 +132,20 @@ function ProductDetailPage() {
         </button>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-
           {/* ---- LEFT: Product Image ---- */}
-          <div className="bg-gray-800 rounded-2xl overflow-hidden border
+          <div
+            className="bg-gray-800 rounded-2xl overflow-hidden border
                           border-gray-700 aspect-square flex items-center
-                          justify-center">
+                          justify-center"
+          >
             {imageUrl ? (
               <img
                 src={imageUrl}
                 alt={product.name}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  e.target.style.display = 'none'
-                  e.target.nextSibling.style.display = 'flex'
+                  e.target.style.display = "none";
+                  e.target.nextSibling.style.display = "flex";
                 }}
               />
             ) : null}
@@ -155,7 +154,7 @@ function ProductDetailPage() {
             <div
               className="w-full h-full flex items-center justify-center
                          text-gray-500 text-8xl"
-              style={{ display: imageUrl ? 'none' : 'flex' }}
+              style={{ display: imageUrl ? "none" : "flex" }}
             >
               📦
             </div>
@@ -164,10 +163,11 @@ function ProductDetailPage() {
           {/* ---- RIGHT: Product Details ---- */}
           <div className="flex flex-col justify-between">
             <div>
-
               {/* Category badge */}
-              <span className="inline-block bg-purple-900 text-purple-300
-                               text-xs font-medium px-3 py-1 rounded-full mb-4">
+              <span
+                className="inline-block bg-purple-900 text-purple-300
+                               text-xs font-medium px-3 py-1 rounded-full mb-4"
+              >
                 {product.category}
               </span>
 
@@ -178,14 +178,16 @@ function ProductDetailPage() {
 
               {/* Price */}
               <div className="text-4xl font-bold text-purple-400 mb-6">
-                ₹{product.price?.toLocaleString('en-IN')}
+                ₹{product.price?.toLocaleString("en-IN")}
               </div>
 
               {/* Description */}
               <div className="mb-6">
-                <h3 className="text-gray-300 font-semibold mb-2">Description</h3>
+                <h3 className="text-gray-300 font-semibold mb-2">
+                  Description
+                </h3>
                 <p className="text-gray-400 leading-relaxed text-sm">
-                  {product.description || 'No description available.'}
+                  {product.description || "No description available."}
                 </p>
               </div>
 
@@ -207,21 +209,20 @@ function ProductDetailPage() {
                   </span>
                 )}
               </div>
-
             </div>
 
             {/* ---- QUANTITY + ADD TO CART ---- */}
             <div>
-
               {/* Quantity selector */}
               {product.stock > 0 && (
                 <div className="flex items-center gap-4 mb-4">
-                  <span className="text-gray-300 text-sm font-medium">Quantity:</span>
+                  <span className="text-gray-300 text-sm font-medium">
+                    Quantity:
+                  </span>
                   <div className="flex items-center gap-2">
-
                     {/* Minus button */}
                     <button
-                      onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                       className="w-8 h-8 bg-gray-700 hover:bg-gray-600 text-white
                                  rounded-lg flex items-center justify-center
                                  transition font-bold"
@@ -237,7 +238,7 @@ function ProductDetailPage() {
                     {/* Plus button */}
                     <button
                       onClick={() =>
-                        setQuantity(q => Math.min(product.stock, q + 1))
+                        setQuantity((q) => Math.min(product.stock, q + 1))
                       }
                       className="w-8 h-8 bg-gray-700 hover:bg-gray-600 text-white
                                  rounded-lg flex items-center justify-center
@@ -245,7 +246,6 @@ function ProductDetailPage() {
                     >
                       +
                     </button>
-
                   </div>
                 </div>
               )}
@@ -256,25 +256,28 @@ function ProductDetailPage() {
                 disabled={adding || product.stock === 0}
                 className={`w-full py-4 rounded-xl font-semibold text-base
                             transition flex items-center justify-center gap-2
-                            ${product.stock === 0
-                              ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                              : added
-                                ? 'bg-green-600 text-white'
-                                : 'bg-purple-600 hover:bg-purple-700 text-white'
+                            ${
+                              product.stock === 0
+                                ? "bg-gray-700 text-gray-500 cursor-not-allowed"
+                                : added
+                                  ? "bg-green-600 text-white"
+                                  : "bg-purple-600 hover:bg-purple-700 text-white"
                             }`}
               >
                 {adding ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent
-                                    rounded-full animate-spin"></div>
+                    <div
+                      className="w-4 h-4 border-2 border-white border-t-transparent
+                                    rounded-full animate-spin"
+                    ></div>
                     Adding...
                   </>
                 ) : added ? (
-                  '✅ Added to Cart!'
+                  "✅ Added to Cart!"
                 ) : product.stock === 0 ? (
-                  'Out of Stock'
+                  "Out of Stock"
                 ) : (
-                  '🛒 Add to Cart'
+                  "🛒 Add to Cart"
                 )}
               </button>
 
@@ -294,18 +297,16 @@ function ProductDetailPage() {
                 <p className="text-gray-500 text-xs text-center mt-3">
                   <Link to="/login" className="text-purple-400 hover:underline">
                     Login
-                  </Link>{' '}
+                  </Link>{" "}
                   to add items to your cart
                 </p>
               )}
-
             </div>
           </div>
-
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default ProductDetailPage
+export default ProductDetailPage;
