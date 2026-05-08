@@ -1,22 +1,30 @@
+# Java 21 use karenge
+FROM eclipse-temurin:21-jdk-jammy
 
-FROM eclipse-temurin:21-jdk-alpine
-
-
+# Working directory
 WORKDIR /app
 
-
+# Pehle pom.xml copy karo — dependencies cache hogi
 COPY pom.xml .
+
+# Maven wrapper copy karo
 COPY mvnw .
-COPY .mvn .mvn
+COPY .mvn/ .mvn/
 
+# mvnw ko executable banao
+RUN chmod +x mvnw
 
+# Dependencies download karo
 RUN ./mvnw dependency:go-offline -B
 
-COPY src src
+# Source code copy karo
+COPY src/ src/
 
+# Build karo — tests skip
+RUN ./mvnw clean package -DskipTests
 
-RUN ./mvnw clean install -DskipTests
-
-
+# Port expose karo
 EXPOSE 8080
-CMD ["java", "-jar", "target/ecommerce-0.0.1-SNAPSHOT.jar"]
+
+# App start karo
+ENTRYPOINT ["java", "-jar", "target/ecommerce-0.0.1-SNAPSHOT.jar"]
