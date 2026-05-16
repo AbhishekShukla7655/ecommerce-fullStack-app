@@ -76,8 +76,6 @@ function ProductDetailPage() {
     }
   };
 
-  const imageUrl = getImageUrl(product.imageUrl);
-
   // -----------------------------------------------
   // LOADING STATE
   // -----------------------------------------------
@@ -116,6 +114,7 @@ function ProductDetailPage() {
     );
   }
 
+  const imageUrl = getImageUrl(product.imageUrl);
   // -----------------------------------------------
   // MAIN RENDER
   // -----------------------------------------------
