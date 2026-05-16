@@ -18,7 +18,7 @@ public class ProductService {
     private ProductRepository productRepository;
 
     @Autowired
-    private FileStorageService fileStorageService;
+    private CloudinaryService cloudinaryService;
 
     private ProductDTO toDTO(Product product) {
         ProductDTO dto = new ProductDTO();
@@ -31,7 +31,6 @@ public class ProductService {
         dto.setImageUrl(product.getImageUrl());
         return dto;
     }
-
 
     public List<ProductDTO> getAllProducts(String name, String category) {
         List<Product> products;
@@ -53,7 +52,6 @@ public class ProductService {
             products = productRepository.findAll();
         }
 
-
         return products.stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
@@ -74,17 +72,16 @@ public class ProductService {
         product.setStock(dto.getStock());
 
         if (image != null && !image.isEmpty()) {
-            String filename = fileStorageService.saveImage(image);
-            product.setImageUrl(filename);
+            String imageUrl = cloudinaryService.uploadImage(image);
+            product.setImageUrl(imageUrl); // full Cloudinary URL save hoga
         }
 
         Product saved = productRepository.save(product);
         return toDTO(saved);
     }
 
-
     public ProductDTO updateProduct(Long id, ProductDTO dto,
-                                    MultipartFile image) throws IOException {
+            MultipartFile image) throws IOException {
 
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
@@ -96,12 +93,11 @@ public class ProductService {
         product.setStock(dto.getStock());
 
         if (image != null && !image.isEmpty()) {
-            // Delete the old image file from disk (if exists)
             if (product.getImageUrl() != null) {
-                fileStorageService.deleteImage(product.getImageUrl());
+                cloudinaryService.deleteImage(product.getImageUrl());
             }
-            String filename = fileStorageService.saveImage(image);
-            product.setImageUrl(filename);
+            String imageUrl = cloudinaryService.uploadImage(image);
+            product.setImageUrl(imageUrl);
         }
 
         Product updated = productRepository.save(product);
@@ -113,7 +109,7 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
 
         if (product.getImageUrl() != null) {
-            fileStorageService.deleteImage(product.getImageUrl());
+            cloudinaryService.deleteImage(product.getImageUrl());
         }
 
         productRepository.deleteById(id);
